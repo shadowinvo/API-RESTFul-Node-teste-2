@@ -1,0 +1,47 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express(); // Inicializa o Express
+const PORT = process.env.PORT || 3000; // Define a porta do servidor
+
+let todos = []; // Array para armazenar todos os todos
+app.use(bodyParser.json()); // Middleware para analisar o corpo das solicitações como JSON
+
+// Endpoint para obter todos os todos
+app.get('/todos', (req, res) => res.json(todos));
+
+// Endpoint para obter um todo específico pelo ID
+app.get('/todos/:id', (req, res) => {
+  const todo = todos.find(todo => todo.id === parseInt(req.params.id));
+  res.json(todo || { message: 'Todo not found' });
+});
+
+// Endpoint para criar um novo todo
+app.post('/todos', (req, res) => {
+  const { title } = req.body;
+  const newTodo = { id: todos.length + 1, title };
+  todos.push(newTodo);
+  res.status(201).json(newTodo);
+});
+
+// Endpoint para atualizar um todo existente pelo ID
+app.put('/todos/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const todoToUpdate = todos.find(todo => todo.id === id);
+  if (todoToUpdate) {
+    todoToUpdate.title = req.body.title || todoToUpdate.title;
+    res.json(todoToUpdate);
+  } else {
+    res.status(404).json({ message: 'Todo not found' });
+  }
+});
+
+// Endpoint para excluir um todo pelo ID
+app.delete('/todos/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  todos = todos.filter(todo => todo.id !== id);
+  res.json({ message: 'Todo deleted successfully' });
+});
+
+// Inicia o servidor e ouve a porta definida
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
